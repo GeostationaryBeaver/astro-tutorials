@@ -1,2 +1,2 @@
 # astro-tutorials
-Tutorials I wish I had for orekit, gmat, etc.
+Tutorials I wish I had for orekit, gmat, etc. I first thought of the idea for this repo after <a href='https://geostationarybeaver.github.io/2026/07/25/new-repo-idea.html'>nearly driving myself insane</a> trying to write up a simple Hohmann transfer with orekit. My guiding philosophy for this repo is that any time I run into a wall figuring out how to do something with Orekit, GMAT, or whatever else, I'll create a reference tutorial so that if someone confronts a similar issue, they'll have a (hopefully) easily parsed resource avaiable to them.
