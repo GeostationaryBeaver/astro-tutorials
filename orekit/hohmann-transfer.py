@@ -9,7 +9,7 @@ vm = orekit.initVM()
 from orekit.pyhelpers import setup_orekit_curdir
 from org.orekit.propagation import Propagator
 
-setup_orekit_curdir()
+setup_orekit_curdir("/Users/beaveracosta/orekit-data")
 
 from org.orekit.orbits import KeplerianOrbit, PositionAngleType
 from org.orekit.frames import FramesFactory, LOFType
@@ -74,44 +74,36 @@ def demonstrate_event_driven_hohmann():
     print(f"Eccentricity:    {initial_orbit.getE():.4f}")
 
     # ==========================================
-    # 4. Calculate Date of Apogee
-    # ==========================================
-    finder_prop = KeplerianPropagator(initial_orbit)
-    
-    # ApsideDetector triggers at perigee and apogee. StopOnEvent halts propagation.
-    # Since we start at perigee, the first event it hits will be apogee.
-    apside_detector = ApsideDetector(initial_orbit).withHandler(StopOnEvent())
-    finder_prop.addEventDetector(apside_detector)
-    
-    # Propagate forward by one period; it will stop early at apogee
-    state_at_apogee = finder_prop.propagate(initial_date.shiftedBy(initial_orbit.getKeplerianPeriod()))
-    t1 = state_at_apogee.getDate()
-    
-    print(f"\n[Event Detected] Apogee found at: {t1}")
-
-    # ==========================================
-    # 5. Calculate Maneuvers
+    # 4. Calculate Maneuvers
     # ==========================================
     r_target = earth_radius + 6000e3
     a_transfer = (r_apogee + r_target) / 2.0
-    
+
+    # Calculate when initial apogee is reached
+    initial_period = initial_orbit.getKeplerianPeriod()
+    time_to_apogee = initial_period / 2
+    t1 = initial_date.shiftedBy(time_to_apogee)
+
     # Burn 1 Delta-V (at initial apogee)
     v_i1 = math.sqrt(mu * (2.0 / r_apogee - 1.0 / a_init))
     v_t1 = math.sqrt(mu * (2.0 / r_apogee - 1.0 / a_transfer))
     delta_v1 = v_t1 - v_i1
-    
+
     # Burn 2 Delta-V (at transfer apogee)
     v_t2 = math.sqrt(mu * (2.0 / r_target - 1.0 / a_transfer))
     v_circ = math.sqrt(mu / r_target)
     delta_v2 = v_circ - v_t2
-    
+
     # Time of flight for the transfer orbit (half a period)
     transfer_period = 2.0 * math.pi * math.sqrt((a_transfer ** 3) / mu)
     t_tof = transfer_period / 2.0
     t2 = t1.shiftedBy(t_tof)
 
+    print(f'Perigee-raising burn will occur at: {t1}')
+    print(f"\nCircularizing burn will occur at: {t2}")
+
     # ==========================================
-    # 6. Create the Propagator
+    # 5. Create the Propagator
     # ==========================================
     main_prop = KeplerianPropagator(initial_orbit)
 
@@ -134,7 +126,7 @@ def demonstrate_event_driven_hohmann():
     main_prop.addEventDetector(maneuver2)
 
     # ==========================================
-    # 7. Propagate the Orbits
+    # 6. Propagate the Orbits
     # ==========================================
     # Get position at Burn 1 (Initial Apogee)
     pv_burn1 = main_prop.propagate(t1).getPVCoordinates().getPosition()
@@ -150,7 +142,7 @@ def demonstrate_event_driven_hohmann():
     more_len = main_prop.propagate(t2.shiftedBy(final_period)).getPVCoordinates().getPosition()
 
     # ==========================================
-    # 8. Plotting the Trajectory
+    # 7. Plotting the Trajectory
     # ==========================================
     plt.figure(figsize=(9, 9))
 
@@ -167,7 +159,7 @@ def demonstrate_event_driven_hohmann():
     plt.annotate(f'Burn 1\nΔV1 = {delta_v1:.1f} m/s', 
                 xy=(x_burn1, y_burn1), 
                 xytext=(x_burn1 + 500, y_burn1 + 500),
-                arrowprops=dict(facecolor='red', shrink=0.05, width=1, headwidth=6),
+                # arrowprops=dict(facecolor='red', shrink=0.05, width=1, headwidth=6),
                 fontsize=9, fontweight='bold', color='crimson')
 
     # Mark Burn 2
@@ -175,7 +167,7 @@ def demonstrate_event_driven_hohmann():
     plt.annotate(f'Burn 2\nΔV2 = {delta_v2:.1f} m/s', 
                 xy=(x_burn2, y_burn2), 
                 xytext=(x_burn2 - 2500, y_burn2 - 1500),
-                arrowprops=dict(facecolor='green', shrink=0.05, width=1, headwidth=6),
+                # arrowprops=dict(facecolor='green', shrink=0.05, width=1, headwidth=6),
                 fontsize=9, fontweight='bold', color='darkgreen')
 
     # Formatting
