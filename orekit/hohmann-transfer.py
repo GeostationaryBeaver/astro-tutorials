@@ -9,7 +9,7 @@ vm = orekit.initVM()
 from orekit.pyhelpers import setup_orekit_curdir
 from org.orekit.propagation import Propagator
 
-setup_orekit_curdir("/Users/beaveracosta/orekit-data")
+setup_orekit_curdir()
 
 from org.orekit.orbits import KeplerianOrbit, PositionAngleType
 from org.orekit.frames import FramesFactory, LOFType
